@@ -99,7 +99,7 @@ public class ChatClient extends Thread {
                 final DatagramPacket packet = new DatagramPacket(outputBytes, outputBytes.length, hostAddress, hostPort);
                 datagramSocket.send(packet);
 
-                // Remove Shutdown Hook and Close Socket & Streams
+                // Remove Shutdown Hook and Close Streams
                 Runtime.getRuntime().removeShutdownHook(shutdownCode);
                 shutdownCode.run();
             }

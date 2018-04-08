@@ -103,7 +103,7 @@ public class ChatServer extends Thread {
                     LogManager.getLogger().error(packet.toString() + "\n\n" + e.getMessage());
                 } catch (final InterruptedException ignored) {}
 
-                // Remove Shutdown Hook and Close Socket & Streams
+                // Remove Shutdown Hook and Close Streams
                 Runtime.getRuntime().removeShutdownHook(shutdownCode);
                 shutdownCode.run();
             }
