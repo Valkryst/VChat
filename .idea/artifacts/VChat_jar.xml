@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="VChat:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/VChat_jar</output-path>
+    <root id="archive" name="VChat.jar">
+      <element id="module-output" name="VChat" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-core/2.10.0/log4j-core-2.10.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/logging/log4j/log4j-api/2.10.0/log4j-api-2.10.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
