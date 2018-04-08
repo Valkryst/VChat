@@ -93,14 +93,14 @@ public class ChatClient extends Thread {
                 objectOutputStream.writeObject(message);
                 objectOutputStream.flush();
 
+                // Remove Shutdown Hook and Close Streams
+                Runtime.getRuntime().removeShutdownHook(shutdownCode);
+                shutdownCode.run();
+
                 // Retrieve Compressed Object Bytes from Byte Output Stream
                 final byte[] outputBytes = byteArrayOutputStream.toByteArray();
                 final DatagramPacket packet = new DatagramPacket(outputBytes, outputBytes.length, hostAddress, hostPort);
                 datagramSocket.send(packet);
-
-                // Remove Shutdown Hook and Close Streams
-                Runtime.getRuntime().removeShutdownHook(shutdownCode);
-                shutdownCode.run();
             }
 
             datagramSocket.close();
