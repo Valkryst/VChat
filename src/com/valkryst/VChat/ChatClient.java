@@ -4,14 +4,11 @@ import com.valkryst.VChat.message.DummyMessage;
 import com.valkryst.VChat.message.Message;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.*;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class ChatClient extends Thread {
@@ -19,9 +16,6 @@ public class ChatClient extends Thread {
     @Getter private final InetAddress hostAddress;
     /** The port to connect to. */
     @Getter private final int hostPort;
-
-    /** The number of attempts to make when re-sending a message, if no acknowledgement is received. */
-    @Getter @Setter private int resendAttempts = 6;
 
     /** Whether or not the client should continue running. */
     @Getter private boolean continueRunning = true;
