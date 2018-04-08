@@ -68,7 +68,6 @@ public class ChatClient extends Thread {
 
             // Continually retrieve messages and send them
             while (continueRunning) {
-                // Write Message to Object Output Stream
                 final Message message = messageQueue.take();
 
                 if (message instanceof DummyMessage) {
