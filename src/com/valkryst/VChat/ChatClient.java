@@ -64,7 +64,6 @@ public class ChatClient extends Thread {
         try {
             // Create Socket & Output Streams
             final DatagramSocket datagramSocket = new DatagramSocket();
-            datagramSocket.setSoTimeout(10000);
 
             // Continually retrieve messages and send them
             while (continueRunning) {
