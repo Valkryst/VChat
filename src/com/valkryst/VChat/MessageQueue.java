@@ -46,7 +46,7 @@ public class MessageQueue {
     }
 
     /**
-     * Retrieves the head of the queue without removing it.
+     * Retrieves the head of the queue.
      *
      * @return
      *          The head message.
