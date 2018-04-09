@@ -6,14 +6,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPInputStream;
 
 public class ChatServer extends Thread {
     /** The port to listen to. */
@@ -69,43 +65,21 @@ public class ChatServer extends Thread {
                     continue;
                 }
 
-                // Create IO Streams
-                final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData());
-                final GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
-                final ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream);
+                final Message message = Message.fromDatagramPacket(packet);
 
-                // Create Shutdown Hook for IO Streams
-                final Thread shutdownCode = new Thread(() -> {
-                    try {
-                        objectInputStream.close();
-                    } catch (final IOException e) {
-                        e.printStackTrace();
+                if (message instanceof DummyMessage) {
+                    continue;
+                } else {
+                    while (true) {
+                        try {
+                            messageQueue.put(message);
+                            System.out.println("Received Message: " + message.getMessage());
+                            break;
+                        } catch (final InterruptedException e) {
+                            LogManager.getLogger().error(e.getMessage());
+                        }
                     }
-                });
-
-                Runtime.getRuntime().addShutdownHook(shutdownCode);
-
-                // Convert Packet Bytes into Message
-                try {
-                    final Object object = objectInputStream.readObject();
-
-                    if (object instanceof DummyMessage) {
-                        continue;
-                    }
-
-                    if (object instanceof Message) {
-                        messageQueue.put((Message) object);
-                        System.out.println("Received Message: " + ((Message) object).getMessage());
-                    }
-                } catch (final ClassNotFoundException e) {
-                    // Because the server isn't able to use the packet of the class, sent by the client, it logs
-                    // the exception and ignores the packet.
-                    LogManager.getLogger().error(packet.toString() + "\n\n" + e.getMessage());
-                } catch (final InterruptedException ignored) {}
-
-                // Remove Shutdown Hook and Close Streams
-                Runtime.getRuntime().removeShutdownHook(shutdownCode);
-                shutdownCode.run();
+                }
             }
 
             datagramSocket.close();
