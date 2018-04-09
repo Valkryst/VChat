@@ -5,11 +5,11 @@ import com.valkryst.VChat.message.Message;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.*;
-import java.util.zip.GZIPOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class ChatClient extends Thread {
     /** The host address to connect to. */
@@ -73,33 +73,8 @@ public class ChatClient extends Thread {
                     break;
                 }
 
-                // Create IO Streams
-                final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
-                final ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream);
-
-                // Create Shutdown Hook for IO Streams
-                final Thread shutdownCode = new Thread(() -> {
-                    try {
-                        objectOutputStream.close();
-                    } catch (final IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-                Runtime.getRuntime().addShutdownHook(shutdownCode);
-
-                // Write Object to Stream
-                objectOutputStream.writeObject(message);
-                objectOutputStream.flush();
-
-                // Remove Shutdown Hook and Close Streams
-                Runtime.getRuntime().removeShutdownHook(shutdownCode);
-                shutdownCode.run();
-
-                // Retrieve Compressed Object Bytes from Byte Output Stream
-                final byte[] outputBytes = byteArrayOutputStream.toByteArray();
-                final DatagramPacket packet = new DatagramPacket(outputBytes, outputBytes.length, hostAddress, hostPort);
+                final byte[] data = Message.toBytes(message);
+                final DatagramPacket packet = new DatagramPacket(data, data.length, hostAddress, hostPort);
                 datagramSocket.send(packet);
             }
 
@@ -107,6 +82,14 @@ public class ChatClient extends Thread {
         } catch (final IOException | InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendMessageLoop(final @NonNull DatagramSocket socket) {
+
+    }
+
+    private void receiveMessageLoop(final @NonNull DatagramSocket socket) {
+
     }
 
     /**
