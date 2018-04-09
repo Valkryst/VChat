@@ -84,14 +84,6 @@ public class ChatClient extends Thread {
         }
     }
 
-    private void sendMessageLoop(final @NonNull DatagramSocket socket) {
-
-    }
-
-    private void receiveMessageLoop(final @NonNull DatagramSocket socket) {
-
-    }
-
     /**
      * Sets whether or not the client should continue running.
      *
