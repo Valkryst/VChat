@@ -1,10 +1,8 @@
 package com.valkryst.VChat.message;
 
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
-import java.net.DatagramPacket;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -113,28 +111,5 @@ public class Message implements Serializable {
         shutdownCode.run();
 
         return message;
-    }
-
-    /**
-     * Attempts to read a Message from a DatagramPacket.
-     *
-     * @param packet
-     *          The packet.
-     *
-     * @return
-     *          The message, or null if a ClassNotFoundException occurs.
-     *
-     * @throws IOException
-     *          If there's an IO error.
-     */
-    public static Message fromDatagramPacket(final DatagramPacket packet) throws IOException {
-        try {
-            return fromBytes(packet.getData());
-        } catch (final ClassNotFoundException e) {
-            // Because the server isn't able to use the packet of the class, sent by the client, it logs
-            // the exception and ignores the packet.
-            LogManager.getLogger().error(packet.toString() + "\n\n" + e.getMessage());
-            return null;
-        }
     }
 }
