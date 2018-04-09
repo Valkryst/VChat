@@ -53,7 +53,7 @@ public class ChatServer extends Thread {
             datagramSocket.setSoTimeout(10000);
 
             // Receive Data from Client
-            final byte[] buffer = new byte[1024];
+            final byte[] buffer = new byte[600];
             final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
             while (continueRunning) {
@@ -65,8 +65,21 @@ public class ChatServer extends Thread {
                     continue;
                 }
 
-                final Message message = Message.fromDatagramPacket(packet);
+                // Retrieve Message from Datagram Packet
+                Message message;
 
+                try {
+                    message = Message.fromBytes(packet.getData());
+                } catch (final IOException | ClassNotFoundException e) {
+                    LogManager.getLogger().error(e.getMessage());
+                    continue;
+                }
+
+                if (message == null) {
+                    continue;
+                }
+
+                // Handle Message
                 if (message instanceof DummyMessage) {
                     continue;
                 } else {
@@ -84,6 +97,7 @@ public class ChatServer extends Thread {
 
             datagramSocket.close();
         } catch (final IOException e) {
+            LogManager.getLogger().error(e.getMessage());
             e.printStackTrace();
         }
     }
