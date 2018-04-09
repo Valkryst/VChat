@@ -8,7 +8,7 @@ import java.util.zip.GZIPOutputStream;
 
 public class Message implements Serializable {
     /** The maximum number of characters of a message */
-    private static final int MAX_CHARACTERS = 256;
+    public static final int MAX_CHARACTERS = 256;
 
     /** The message. */
     @Getter private final String message;
