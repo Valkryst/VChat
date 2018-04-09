@@ -7,6 +7,9 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class Message implements Serializable {
+    /** The maximum number of characters of a message */
+    private static final int MAX_CHARACTERS = 256;
+
     /** The message. */
     @Getter private final String message;
 
@@ -17,7 +20,11 @@ public class Message implements Serializable {
      *          The message.
      */
     public Message(final String message) {
-        this.message = (message.isEmpty() ? "" : message);
+        if (message.length() > MAX_CHARACTERS) {
+            this.message = message.substring(0, MAX_CHARACTERS);
+        } else {
+            this.message = (message.isEmpty() ? "" : message);
+        }
     }
 
     @Override
