@@ -4,6 +4,7 @@ import com.valkryst.VChat.message.DummyMessage;
 import com.valkryst.VChat.message.Message;
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -21,7 +22,10 @@ public class ChatClient extends Thread {
     @Getter private boolean continueRunning = true;
 
     /** The queue of messages to be sent. */
-    @Getter private final MessageQueue messageQueue;
+    private final MessageQueue sendQueue = new MessageQueue();
+
+    /** The queue of messages received. */
+    private final MessageQueue receiveQueue = new MessageQueue();
 
     /**
      * Constructs a new ChatClient.
@@ -32,11 +36,8 @@ public class ChatClient extends Thread {
      * @param hostPort
      *          The port to connect to.
      *
-     * @param messageQueue
-     *          The queue of messages to be sent.
-     *
      * @throws NullPointerException
-     *          If the host or messageQueue are null.
+     *          If the host or sendQueue are null.
      *
      * @throws IllegalArgumentException
      *          If the host is empty.
@@ -45,7 +46,7 @@ public class ChatClient extends Thread {
      * @throws UnknownHostException
      *          If the host is unknown.
      */
-    public ChatClient(final @NonNull String host, final int hostPort, final @NonNull MessageQueue messageQueue) throws UnknownHostException {
+    public ChatClient(final @NonNull String host, final int hostPort) throws UnknownHostException {
         if (host.isEmpty()) {
             throw new IllegalArgumentException("You must specify a host.");
         }
@@ -56,7 +57,6 @@ public class ChatClient extends Thread {
 
         this.hostAddress = InetAddress.getByName(host);
         this.hostPort = hostPort;
-        this.messageQueue = messageQueue;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ChatClient extends Thread {
 
             // Continually retrieve messages and send them
             while (continueRunning) {
-                final Message message = messageQueue.take();
+                final Message message = sendQueue.take();
 
                 if (message instanceof DummyMessage) {
                     break;
@@ -85,6 +85,42 @@ public class ChatClient extends Thread {
     }
 
     /**
+     * Inserts a message at the tail of the queue.
+     *
+     * If an InterruptedException occurs when inserting the message, a
+     * retry will be attempted. If all retries fail, then the message is not
+     * inserted.
+     *
+     * @param message
+     *          The message.
+     */
+    public void sendMessage(final Message message) {
+        if (message != null) {
+            for (int attempts = 0 ; attempts < 4 ; attempts++) {
+                try {
+                    sendQueue.put(message);
+                    break;
+                } catch (final InterruptedException e) {
+                    LogManager.getLogger().error(e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves the head of the received queue.
+     *
+     * @return
+     *          The head message.
+     *
+     * @throws InterruptedException
+     *          If interrupted while waiting to take a message from the queue.
+     */
+    public Message receiveMessage() throws InterruptedException {
+        return receiveQueue.take();
+    }
+
+    /**
      * Sets whether or not the client should continue running.
      *
      * It will cease running as soon as possible, after this is set to false.
@@ -98,7 +134,7 @@ public class ChatClient extends Thread {
     public void setContinueRunning(final boolean continueRunning) throws InterruptedException {
         this.continueRunning = continueRunning;
 
-        if (!continueRunning && messageQueue.size() == 0) {
+        if (!continueRunning && sendQueue.size() == 0) {
             /*
              * To ensure the client shuts down faster, we give it a dummy message to process if it has nothing
              * to process.
@@ -108,7 +144,7 @@ public class ChatClient extends Thread {
              * variable is only run after a message is processed, the client will shut down much more slowly
              * (or never in some cases) if it has to wait on a message to be sent before it runs the check.
              */
-            messageQueue.put(new DummyMessage());
+            sendQueue.put(new DummyMessage());
         }
     }
 }
