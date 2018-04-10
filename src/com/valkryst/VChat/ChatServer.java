@@ -111,11 +111,8 @@ public class ChatServer extends Thread {
      *
      * @param continueRunning
      *          Whether or not the client should continue running.
-     *
-     * @throws InterruptedException
-     *          If interrupted while waiting to put a dummy message into the queue.
      */
-    public void setContinueRunning(final boolean continueRunning) throws InterruptedException {
+    public void setContinueRunning(final boolean continueRunning) {
         this.continueRunning = continueRunning;
     }
 }
