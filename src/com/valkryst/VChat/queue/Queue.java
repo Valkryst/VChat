@@ -50,7 +50,7 @@ public class Queue<T> {
      */
     public T take() throws InterruptedException {
         final T t = queue.take();
-        queue.remove();
+        queue.remove(t);
         return t;
     }
 
