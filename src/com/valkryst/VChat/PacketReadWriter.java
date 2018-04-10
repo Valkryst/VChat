@@ -98,6 +98,8 @@ public class PacketReadWriter extends Thread {
      *          If interrupted while waiting to put a packet in the queue.
      */
     public void queuePacket(final DatagramPacket packet) throws InterruptedException {
+        packet.setAddress(serverHost);
+        packet.setPort(serverPort);
         writer.queuePacket(packet);
     }
 
