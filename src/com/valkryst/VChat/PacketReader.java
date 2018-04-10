@@ -1,9 +1,8 @@
 package com.valkryst.VChat;
 
-import com.valkryst.VChat.message.DummyMessage;
-import com.valkryst.VChat.message.Message;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ public class PacketReader extends Thread {
     private final DatagramSocket socket;
 
     /** Whether to continue running. */
-    @Getter private boolean running = true;
+    @Getter @Setter private boolean running = true;
 
     /** The FIFO queue of packets received. */
     private final BlockingQueue<DatagramPacket> queue = new LinkedBlockingQueue<>(10_000);
@@ -80,23 +79,5 @@ public class PacketReader extends Thread {
         final DatagramPacket packet = queue.take();
         queue.remove(packet);
         return packet;
-    }
-
-    /**
-     * Sets whether to keep running.
-     *
-     * @param running
-     *          Whether to keep running.
-     */
-    public void setRunning(final boolean running) {
-        this.running = running;
-
-        if (! running && queue.size() == 0) {
-            try {
-                queue.put(Message.toPacket(new DummyMessage()));
-            } catch (final InterruptedException | IOException e) {
-                LogManager.getLogger().error(e.getMessage());
-            }
-        }
     }
 }
