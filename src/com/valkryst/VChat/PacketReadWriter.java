@@ -1,6 +1,5 @@
 package com.valkryst.VChat;
 
-import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 
 import java.net.*;
@@ -33,9 +32,6 @@ public class PacketReadWriter extends Thread {
      * @param clientPort
      *          The port to listen for packets, from the server, on.
      *
-     * @throws NullPointerException
-     *          If the host or sendQueue are null.
-     *
      * @throws IllegalArgumentException
      *          If the host is empty.
      *          If the port isn't within the range of 0-65535.
@@ -47,13 +43,13 @@ public class PacketReadWriter extends Thread {
      *          If there is an error getting/setting the SoTimeout of the
      *          DatagramSocket.
      */
-    public PacketReadWriter(final @NonNull String serverHost, final int serverPort, final int clientPort) throws UnknownHostException, SocketException {
-        if (serverHost.isEmpty()) {
+    public PacketReadWriter(final String serverHost, final int serverPort, final int clientPort) throws UnknownHostException, SocketException {
+        if (serverHost != null && serverHost.isEmpty()) {
             throw new IllegalArgumentException("You must specify a server host.");
         }
 
-        if (serverPort < 0 || serverPort > 65535) {
-            throw new IllegalArgumentException("The server port must be an unused port from 0-65535.");
+        if (serverPort != -1 && (serverPort < 0 || serverPort > 65535)) {
+            throw new IllegalArgumentException("The server port must be an unused port from 0-65535 or set to -1.");
         }
 
         if (clientPort < 0 || clientPort > 65535) {
@@ -98,14 +94,27 @@ public class PacketReadWriter extends Thread {
      *
      * @throws InterruptedException
      *          If interrupted while waiting to put a packet in the queue.
+     *
+     * @throws IllegalArgumentException
+     *          If the packet's destination address of port have not been
+     *          set and the PacketReadWriter was not created with a
+     *          server host/port.
      */
     public void queuePacket(final DatagramPacket packet) throws InterruptedException {
         if (packet.getAddress() == null) {
-            packet.setAddress(serverHost);
+            if (serverHost == null) {
+                throw new IllegalArgumentException("You must manually set the destination address of the packet. The PacketReadWriter was not created with a server host.");
+            } else {
+                packet.setAddress(serverHost);
+            }
         }
 
         if (packet.getPort() == -1) {
-            packet.setPort(serverPort);
+            if (serverPort == -1) {
+                throw new IllegalArgumentException("You must manually set the destination port of the packet. The PacketReadWriter was not created with a server port.");
+            } else {
+                packet.setPort(serverPort);
+            }
         }
 
         writer.queuePacket(packet);
