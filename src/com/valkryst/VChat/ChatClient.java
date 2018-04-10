@@ -69,12 +69,7 @@ public class ChatClient extends Thread {
 
                 while (continueRunning) {
                     if (message == null) {
-                        try {
-                            message = sendQueue.take();
-                        } catch (final InterruptedException e) {
-                            LogManager.getLogger().error(e.getMessage());
-                            continue;
-                        }
+                        message = sendQueue.take();
 
                         if (message instanceof DummyMessage) {
                             message = null;
