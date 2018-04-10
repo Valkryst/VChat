@@ -189,5 +189,10 @@ public class ChatClient extends Thread {
      */
     public void setContinueRunning(final boolean continueRunning) {
         this.continueRunning = continueRunning;
+
+        // Receiver thread can spin forever, waiting on a packet.
+        // To ensure it gets a chance to re-check it's continueRunning var
+        // we send it a dummy message to process.
+        sendMessage(new DummyMessage());
     }
 }
