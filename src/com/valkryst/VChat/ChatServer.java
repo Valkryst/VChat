@@ -75,10 +75,6 @@ public class ChatServer extends Thread {
                     continue;
                 }
 
-                if (message == null) {
-                    continue;
-                }
-
                 // Handle Message
                 if (message instanceof DummyMessage) {
                     continue;
