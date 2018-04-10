@@ -52,7 +52,8 @@ public class PacketWriter extends Thread {
                 queue.remove(packet);
             } catch (final SocketTimeoutException ignored) {
                 // Happens, so the `running` var can be re-checked.
-            } catch (final IOException | InterruptedException e) {
+            } catch (final IOException | InterruptedException | NullPointerException e) {
+                // The NPE can occur when a packet's address/port hasn't been set.
                 LogManager.getLogger().error(e.getMessage());
             }
         }
@@ -62,15 +63,29 @@ public class PacketWriter extends Thread {
      * Adds a packet to the tail of the queue. Waiting, if necessary, for
      * room to be made, in the queue, for the new packet.
      *
+     * Assumes that the packet's destination address/port has already
+     * been set.
+     *
      * @param packet
      *          The packet.
      *
      * @throws InterruptedException
      *          If interrupted while waiting to put a packet in the queue.
+     *
+     * @throws IllegalArgumentException
+     *          If the packet's destination address/port have not been set.
      */
     public void queuePacket(final DatagramPacket packet) throws InterruptedException {
         if (packet == null) {
             return;
+        }
+
+        if (packet.getAddress() == null) {
+            throw new IllegalArgumentException("You must set the packet's destination address.");
+        }
+
+        if (packet.getPort() == -1) {
+            throw new IllegalArgumentException("You must set the packet's destination port.");
         }
 
         queue.put(packet);
