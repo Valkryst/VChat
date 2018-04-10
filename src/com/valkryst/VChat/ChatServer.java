@@ -79,7 +79,7 @@ public class ChatServer extends Thread {
                 if (message instanceof DummyMessage) {
                     continue;
                 } else {
-                    while (true) {
+                    for (int i = 0 ; i < 4 ; i++) {
                         try {
                             messageQueue.put(message);
                             System.out.println("Received Message: " + message.getMessage());
