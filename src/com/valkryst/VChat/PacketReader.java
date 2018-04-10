@@ -61,7 +61,7 @@ public class PacketReader extends Thread {
                     }
                 }
             } catch (final SocketTimeoutException ignored) {
-                // Happens, so the `running` var can be re-checked.
+                // Happens so the `running` var can be re-checked.
             } catch (final IOException e) {
                 LogManager.getLogger().error(e.getMessage());
             }

@@ -52,7 +52,7 @@ public class PacketWriter extends Thread {
                 socket.send(packet);
                 queue.remove(packet);
             } catch (final SocketTimeoutException ignored) {
-                // Happens, so the `running` var can be re-checked.
+                // Happens so the `running` var can be re-checked.
             } catch (final IOException | InterruptedException | NullPointerException e) {
                 // The NPE can occur when a packet's address/port hasn't been set.
                 LogManager.getLogger().error(e.getMessage());
