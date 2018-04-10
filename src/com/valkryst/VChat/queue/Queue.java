@@ -5,7 +5,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Queue<T> {
     /** The FIFO queue of objects. */
-    protected final BlockingQueue<T> queue = new LinkedBlockingQueue<>();
+    protected final BlockingQueue<T> queue = new LinkedBlockingQueue<>(10_000);
 
     @Override
     public String toString() {
