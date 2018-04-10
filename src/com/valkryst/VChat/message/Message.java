@@ -80,6 +80,27 @@ public class Message implements Serializable {
     }
 
     /**
+     * Attempts to pack a Message object into a DatagramPacket.
+     *
+     * @param message
+     *          The message.
+     *
+     * @return
+     *          The packet, or null if the input message is null.
+     *
+     * @throws IOException
+     *          If an IO exception occurs.
+     */
+    public static DatagramPacket toPacket(final Message message) throws IOException {
+        if (message == null) {
+            return null;
+        }
+
+        final byte[] buffer = Message.toBytes(message);
+        return new DatagramPacket(buffer, buffer.length);
+    }
+
+    /**
      * Attempts to read a Message from a set of GZIPed bytes.
      *
      * @param data
@@ -131,7 +152,7 @@ public class Message implements Serializable {
      * @return
      *          The message, or null if no message could be read.
      */
-    public static Message fromDatagramPacket(final DatagramPacket packet) {
+    public static Message fromPacket(final DatagramPacket packet) {
         if (packet == null) {
             return null;
         }
