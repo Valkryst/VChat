@@ -1,7 +1,6 @@
 package com.valkryst.VChat;
 
-import com.valkryst.VChat.message.DummyMessage;
-import com.valkryst.VChat.message.Message;
+import com.valkryst.VChat.queue.PacketQueue;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 
@@ -18,7 +17,7 @@ public class ChatServer extends Thread {
     @Getter private boolean continueRunning = true;
 
     /** The queue of received messages to process. */
-    @Getter private final MessageQueue messageQueue = new MessageQueue();
+    @Getter private final PacketQueue receivedQueue = new PacketQueue();
 
     /**
      * Constructs a new ChatServer.
@@ -45,41 +44,21 @@ public class ChatServer extends Thread {
             datagramSocket.setSoTimeout(10000);
 
             // Receive Data from Client
-            final byte[] buffer = new byte[600];
-            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
             while (continueRunning) {
                 try {
-                    System.out.println("Waiting on Packet");
+                    final byte[] buffer = new byte[600];
+                    final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     datagramSocket.receive(packet);
-                } catch (final SocketTimeoutException ignored) {
-                    // This timeout only exists to allow the server to re-check the continueRunning value.
-                    continue;
-                }
 
-                // Retrieve Message from Datagram Packet
-                Message message;
-
-                try {
-                    message = Message.fromBytes(packet.getData());
-                } catch (final IOException | ClassNotFoundException e) {
-                    LogManager.getLogger().error(e.getMessage());
-                    continue;
-                }
-
-                // Handle Message
-                if (message instanceof DummyMessage) {
-                    continue;
-                } else {
                     for (int attempts = 0 ; attempts < 4 ; attempts++) {
                         try {
-                            messageQueue.put(message);
-                            System.out.println("Received Message (Attempt #" + attempts + "): " + message.getMessage());
-                            break;
-                        } catch (final InterruptedException e) {
+                            receivedQueue.put(packet);
+                        } catch (InterruptedException e) {
                             LogManager.getLogger().error(e.getMessage());
                         }
                     }
+                } catch (final SocketTimeoutException ignored) {
+                    // This timeout only exists to allow the server to re-check the continueRunning value.
                 }
             }
 
@@ -90,7 +69,20 @@ public class ChatServer extends Thread {
         }
     }
 
-
+    /**
+     * Retrieves the head of the receive queue, waiting if necessary until
+     * an element becomes available.
+     *
+     * @return
+     *          The head packet of the queue.
+     *
+     * @throws InterruptedException
+     *          If interrupted while waiting to take a message from the
+     *          queue.
+     */
+    public DatagramPacket receivePacket() throws InterruptedException {
+        return receivedQueue.take();
+    }
 
     /**
      * Sets whether or not the client should continue running.
