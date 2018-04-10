@@ -55,6 +55,7 @@ public class PacketReader extends Thread {
                 for (int attempt = 0 ; attempt < 4 ; attempt++) {
                     try {
                         queue.put(packet);
+                        break;
                     } catch (InterruptedException e) {
                         LogManager.getLogger().error(e.getMessage());
                     }
