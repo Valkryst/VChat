@@ -2,6 +2,7 @@ package com.valkryst.VChat;
 
 import com.valkryst.VChat.message.DummyMessage;
 import com.valkryst.VChat.message.Message;
+import com.valkryst.VChat.queue.MessageQueue;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
@@ -173,7 +174,8 @@ public class ChatClient extends Thread {
      *          The head message.
      *
      * @throws InterruptedException
-     *          If interrupted while waiting to take a message from the queue.
+     *          If interrupted while waiting to take a message from the
+     *          queue.
      */
     public Message receiveMessage() throws InterruptedException {
         return receiveQueue.take();
