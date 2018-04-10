@@ -77,7 +77,6 @@ public class ChatClient extends Thread {
                         }
 
                         if (message instanceof DummyMessage) {
-                            message = null;
                             break;
                         }
                     }
