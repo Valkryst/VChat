@@ -3,7 +3,6 @@ package com.valkryst.VChat;
 import com.valkryst.VChat.message.DummyMessage;
 import com.valkryst.VChat.message.Message;
 import lombok.Getter;
-import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
@@ -19,7 +18,7 @@ public class ChatServer extends Thread {
     @Getter private boolean continueRunning = true;
 
     /** The queue of received messages to process. */
-    @Getter private final MessageQueue messageQueue;
+    @Getter private final MessageQueue messageQueue = new MessageQueue();
 
     /**
      * Constructs a new ChatServer.
@@ -27,22 +26,15 @@ public class ChatServer extends Thread {
      * @param port
      *          The port to listen to.
      *
-     * @param messageQueue
-     *          The queue of received messages to process.
-     *
-     * @throws NullPointerException
-     *          If the messageQueue is null.
-     *
      * @throws IllegalArgumentException
      *          If the port isn't within the range of 0-65535.
      */
-    public ChatServer(final int port, final @NonNull MessageQueue messageQueue) {
+    public ChatServer(final int port) {
         if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("The port must be from 0-65535.");
         }
 
         this.port = port;
-        this.messageQueue = messageQueue;
     }
 
     @Override
