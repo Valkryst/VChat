@@ -91,6 +91,8 @@ public class PacketReadWriter extends Thread {
      * Waiting, if necessary, for room to be made, in the queue, for the
      * new packet.
      *
+     * Sets the destination address/port if it hasn't already been set.
+     *
      * @param packet
      *          The packet.
      *
@@ -98,8 +100,14 @@ public class PacketReadWriter extends Thread {
      *          If interrupted while waiting to put a packet in the queue.
      */
     public void queuePacket(final DatagramPacket packet) throws InterruptedException {
-        packet.setAddress(serverHost);
-        packet.setPort(serverPort);
+        if (packet.getAddress() == null) {
+            packet.setAddress(serverHost);
+        }
+
+        if (packet.getPort() == -1) {
+            packet.setPort(serverPort);
+        }
+
         writer.queuePacket(packet);
     }
 
