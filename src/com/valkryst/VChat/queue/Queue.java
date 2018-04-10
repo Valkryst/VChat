@@ -43,9 +43,15 @@ public class Queue<T> {
      *
      * @return
      *          The element.
+     *
+     * @throws InterruptedException
+     *          If interrupted while waiting to take an element from the
+     *          queue.
      */
-    public T take() {
-        return queue.remove();
+    public T take() throws InterruptedException {
+        final T t = queue.take();
+        queue.remove();
+        return t;
     }
 
     /**
