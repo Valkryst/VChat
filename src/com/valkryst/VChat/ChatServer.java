@@ -53,6 +53,7 @@ public class ChatServer extends Thread {
                     for (int attempts = 0 ; attempts < 4 ; attempts++) {
                         try {
                             receivedQueue.put(packet);
+                            break;
                         } catch (InterruptedException e) {
                             LogManager.getLogger().error(e.getMessage());
                         }
