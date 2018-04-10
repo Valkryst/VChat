@@ -79,10 +79,10 @@ public class ChatServer extends Thread {
                 if (message instanceof DummyMessage) {
                     continue;
                 } else {
-                    for (int i = 0 ; i < 4 ; i++) {
+                    for (int attempts = 0 ; attempts < 4 ; attempts++) {
                         try {
                             messageQueue.put(message);
-                            System.out.println("Received Message: " + message.getMessage());
+                            System.out.println("Received Message (Attempt #" + attempts + "): " + message.getMessage());
                             break;
                         } catch (final InterruptedException e) {
                             LogManager.getLogger().error(e.getMessage());
