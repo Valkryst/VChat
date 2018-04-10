@@ -7,10 +7,7 @@ import lombok.NonNull;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 
 public class ChatClient extends Thread {
     /** The host address to connect to. */
@@ -62,21 +59,82 @@ public class ChatClient extends Thread {
     @Override
     public void run() {
         try {
-            // Create Socket & Output Streams
-            final DatagramSocket datagramSocket = new DatagramSocket();
+            final DatagramSocket datagramSocket = new DatagramSocket(hostPort);
+            datagramSocket.setSoTimeout(10000);
 
-            // Continually retrieve messages and send them
-            while (continueRunning) {
-                final Message message = sendQueue.take();
+            final Thread sender = new Thread(() -> {
+                // Continually send messages
+                Message message = null;
 
-                if (message instanceof DummyMessage) {
-                    break;
+                while (continueRunning) {
+                    if (message == null) {
+                        try {
+                            message = sendQueue.take();
+                        } catch (final InterruptedException e) {
+                            LogManager.getLogger().error(e.getMessage());
+                            continue;
+                        }
+
+                        if (message instanceof DummyMessage) {
+                            message = null;
+                            break;
+                        }
+                    }
+
+                    try {
+                        final byte[] data = Message.toBytes(message);
+                        final DatagramPacket packet = new DatagramPacket(data, data.length, hostAddress, hostPort);
+                        datagramSocket.send(packet);
+
+                        message = null;
+                    } catch (final SocketTimeoutException ignored) {
+                        // This timeout only exists to allow the server to re-check the continueRunning value.
+                    } catch (final IOException e) {
+                        LogManager.getLogger().error(e);
+                        message = null;
+                    }
                 }
+            });
 
-                final byte[] data = Message.toBytes(message);
-                final DatagramPacket packet = new DatagramPacket(data, data.length, hostAddress, hostPort);
-                datagramSocket.send(packet);
-            }
+            final Thread receiver = new Thread(() -> {
+                // Continually receive messages
+                final byte[] buffer = new byte[600];
+                final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+
+                while (continueRunning) {
+                    try {
+                        datagramSocket.receive(packet);
+                    } catch (final SocketTimeoutException ignored) {
+                        // This timeout only exists to allow the server to re-check the continueRunning value.
+                        continue;
+                    } catch (final IOException e) {
+                        LogManager.getLogger().error(e.getMessage());
+                        continue;
+                    }
+
+                    // Retrieve Message & Add to Queue
+                    try {
+                        final Message message = Message.fromBytes(packet.getData());
+
+                        for (int attempts = 0 ; attempts < 4 ; attempts++) {
+                            try {
+                                receiveQueue.put(message);
+                                break;
+                            } catch (InterruptedException e) {
+                                LogManager.getLogger().error(e.getMessage());
+                            }
+                        }
+                    } catch (final IOException | ClassNotFoundException e) {
+                        LogManager.getLogger().error(e.getMessage());
+                    }
+                }
+            });
+
+            sender.start();
+            receiver.start();
+
+            sender.join();
+            receiver.join();
 
             datagramSocket.close();
         } catch (final IOException | InterruptedException e) {
@@ -85,7 +143,7 @@ public class ChatClient extends Thread {
     }
 
     /**
-     * Inserts a message at the tail of the queue.
+     * Inserts a message at the tail of the send queue.
      *
      * If an InterruptedException occurs when inserting the message, a
      * retry will be attempted. If all retries fail, then the message is not
@@ -108,7 +166,8 @@ public class ChatClient extends Thread {
     }
 
     /**
-     * Retrieves the head of the received queue.
+     * Retrieves the head of the receive queue, waiting if necessary until
+     * an element becomes available.
      *
      * @return
      *          The head message.
@@ -127,24 +186,8 @@ public class ChatClient extends Thread {
      *
      * @param continueRunning
      *          Whether or not the client should continue running.
-     *
-     * @throws InterruptedException
-     *          If interrupted while waiting to put a dummy message into the queue.
      */
-    public void setContinueRunning(final boolean continueRunning) throws InterruptedException {
+    public void setContinueRunning(final boolean continueRunning) {
         this.continueRunning = continueRunning;
-
-        if (!continueRunning && sendQueue.size() == 0) {
-            /*
-             * To ensure the client shuts down faster, we give it a dummy message to process if it has nothing
-             * to process.
-             *
-             * We do this because the client may be in a state where it's waiting for a message to enter the
-             * queue before it continues running. Because the check against the continueRunning instance
-             * variable is only run after a message is processed, the client will shut down much more slowly
-             * (or never in some cases) if it has to wait on a message to be sent before it runs the check.
-             */
-            sendQueue.put(new DummyMessage());
-        }
     }
 }
