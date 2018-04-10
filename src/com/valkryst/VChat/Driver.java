@@ -10,24 +10,39 @@ public class Driver {
         final PacketReadWriter packetReadWriter = new PacketReadWriter("t.tiq.cc", 21050, 21050);
         packetReadWriter.start();
 
-        /*
-        final ChatServer server = new ChatServer(21050);
-        server.start();
+        int counter = 0;
+
+        // Comment out when building for server.
+        Message m = new Message(String.valueOf(counter));
+        DatagramPacket p = Message.toPacket(m);
+        System.out.println("Sending First Message: " + m.getMessage());
+        packetReadWriter.queuePacket(p);
+        // End block.
 
         while (true) {
-            final DatagramPacket packet = server.receivePacket();
-            final Message message = Message.fromDatagramPacket(packet);
+            if (counter >= 100) {
+                break;
+            }
+
+            final DatagramPacket receivedPacket = packetReadWriter.dequeuePacket();
+            Message message = Message.fromPacket(receivedPacket);
             System.out.println("Received Message: " + message.getMessage());
-        }
-        */
 
-        for (int i = 0 ; i < 50 ; i++) {
-            final Message message = new Message(String.valueOf(i));
-            final DatagramPacket packet = Message.toPacket(message);
-            packetReadWriter.queuePacket(packet);
+            counter = Integer.valueOf(message.getMessage());
+            counter++;
+
+            message = new Message(String.valueOf(counter));
+            final DatagramPacket newPacket = Message.toPacket(message);
+            newPacket.setAddress(receivedPacket.getAddress());
+            newPacket.setPort(receivedPacket.getPort());
+            System.out.println("Sending Message: " + message.getMessage());
+            packetReadWriter.queuePacket(newPacket);
+
+            Thread.sleep(500);
         }
 
-        Thread.sleep(10000);
+        System.out.println("Shutting Down");
         packetReadWriter.shutdown();
+        System.out.println("Shut Down.");
     }
 }
