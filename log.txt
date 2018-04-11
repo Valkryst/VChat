@@ -1,0 +1,12 @@
+(2018/Apr/10-13:27:32) - ERROR - com.valkryst.VChat.PacketWriter.run.58
+null buffer || null address
+
+(2018/Apr/10-13:28:16) - ERROR - com.valkryst.VChat.PacketWriter.run.58
+null buffer || null address
+
+(2018/Apr/10-13:45:38) - ERROR - com.valkryst.VChat.PacketWriter.run.58
+null buffer || null address
+
+(2018/Apr/10-13:47:49) - ERROR - com.valkryst.VChat.PacketWriter.run.58
+null buffer || null address
+
