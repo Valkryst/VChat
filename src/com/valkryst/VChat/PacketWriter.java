@@ -56,7 +56,8 @@ public class PacketWriter extends Thread {
             } catch (final SocketTimeoutException ignored) {
                 // Happens so the `running` var can be re-checked.
             } catch (final IOException | InterruptedException | NullPointerException e) {
-                // The NPE can occur when a packet's address/port hasn't been set.
+                // The NPE can occur when a packet's port hasn't been set.
+                // We don't want to clutter the logs when this happens
                 if (packet != null) {
                     if (packet.getPort() > 0) {
                         LogManager.getLogger().error(e.getMessage());
